@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { MessageCircle, Clock } from "lucide-react"
+import { MessageCircle, Clock, MapPin } from "lucide-react"
 
 interface Ad {
   id: number | string
@@ -35,7 +35,6 @@ export default function AdComponent({ ad }: { ad: Ad }) {
   return (
     <Link href={`/ad/${ad.id}`} className="block w-full">
       <div className="w-full h-32 sm:h-36 border border-rose-100 rounded-lg bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-        {/* Fixed rectangular layout - horizontal always */}
         <div className="flex h-full w-full">
           {/* Left side - Image (fixed width) */}
           <div className="w-28 sm:w-32 md:w-36 h-full relative flex-shrink-0">
@@ -43,89 +42,62 @@ export default function AdComponent({ ad }: { ad: Ad }) {
               src={ad.images && ad.images.length > 0 ? ad.images[0] : "/placeholder.svg"}
               alt={ad.title}
               fill
-              className="object-cover"
+              className="object-cover rounded-l-lg"
               sizes="(max-width: 640px) 112px, (max-width: 768px) 128px, 144px"
             />
           </div>
 
-          {/* Right side - Details (flexible width with clean layout) */}
-          <div className="flex-1 p-3 sm:p-4 min-w-0 flex flex-col justify-between overflow-hidden">
-            {/* Top section - Main content */}
-            <div className="flex-1 min-h-0 space-y-1 sm:space-y-2">
-              {/* Title - prominent display */}
+          {/* Right side - Details */}
+          <div className="flex-1 p-3 sm:p-4 min-w-0 flex flex-col justify-between">
+            {/* Top - Title */}
+            <div className="mb-2">
               <h3 className="text-sm sm:text-base font-semibold text-primary line-clamp-2 break-words leading-tight">
                 {ad.title}
               </h3>
+            </div>
 
-              {/* Description - flexible space */}
-              <p className="text-xs sm:text-sm text-primary/80 line-clamp-2 break-words leading-relaxed">
+            {/* Middle - Description */}
+            <div className="flex-1 mb-2">
+              <p className="text-xs sm:text-sm text-primary/70 line-clamp-2 break-words leading-relaxed">
                 {ad.description}
               </p>
             </div>
 
-            {/* Bottom section - Fixed info bar */}
-            <div className="flex-shrink-0 mt-2">
-              {/* Price - most prominent */}
-              <div className="mb-2">
+            {/* Bottom section */}
+            <div className="flex items-end justify-between">
+              {/* Left - Price */}
+              <div>
                 <p className="text-base sm:text-lg md:text-xl font-bold text-primary">
                   Rs. {ad.price.toLocaleString()}
                 </p>
               </div>
 
-              {/* Info row - Category, Location, Time, Apps */}
-              <div className="flex items-center justify-between text-xs text-gray-600">
-                {/* Left side - Category and Location */}
-                <div className="flex items-center space-x-3 min-w-0 flex-1">
-                  {/* Category */}
-                  <div className="flex items-center min-w-0">
-                    <span className="inline-block w-2 h-2 rounded-full bg-primary/60 mr-1 flex-shrink-0"></span>
-                    <span className="font-medium truncate">
-                      {ad.category
-                        .split("-")
-                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                        .join(" ")}
+              {/* Right - Location and Time with Apps */}
+              <div className="text-right">
+                {/* Location */}
+                {ad.district && (
+                  <div className="flex items-center justify-end mb-1">
+                    <MapPin className="w-3 h-3 text-primary/60 mr-1 flex-shrink-0" />
+                    <span className="text-xs text-primary/70 truncate max-w-24 sm:max-w-32">
+                      {ad.city ? `${ad.city}, ${ad.district}` : ad.district}
                     </span>
                   </div>
+                )}
 
-                  {/* Location */}
-                  {ad.district && (
-                    <div className="flex items-center min-w-0">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-3 h-3 text-primary/80 mr-1 flex-shrink-0"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                      <span className="text-primary/80 truncate max-w-20 sm:max-w-24">
-                        {ad.city ? `${ad.city}, ${ad.district}` : ad.district}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right side - Time and Apps */}
-                <div className="flex items-center space-x-2 flex-shrink-0">
+                {/* Time and Apps row */}
+                <div className="flex items-center justify-end space-x-2">
                   {/* Time */}
                   <div className="flex items-center">
                     <Clock className="w-3 h-3 mr-1 text-gray-500" />
-                    <span className="text-gray-500">{timeAgo}</span>
+                    <span className="text-xs text-gray-500">{timeAgo}</span>
                   </div>
 
                   {/* Apps */}
                   <div className="flex items-center space-x-1">
-                    {ad.isWhatsApp && (
-                      <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" title="WhatsApp available" />
-                    )}
+                    {ad.isWhatsApp && <MessageCircle className="w-3 h-3 text-green-500" title="WhatsApp available" />}
                     {ad.isViber && (
                       <svg
-                        className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600"
+                        className="w-3 h-3 text-purple-600"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                         title="Viber available"
