@@ -4,26 +4,17 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import Link from "next/link"
-import { getFeaturedAds } from "@/lib/supabase/database-client"
-import type { Ad } from "@/lib/supabase/database-client"
 
 export function FeaturedAdsCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [featuredAds, setFeaturedAds] = useState<Ad[]>([])
+  const [featuredAds, setFeaturedAds] = useState<any[]>([])
 
   useEffect(() => {
-    async function fetchFeaturedAds() {
-      try {
-        const ads = await getFeaturedAds(5)
-        setFeaturedAds(ads)
-      } catch (error) {
-        console.error("Error fetching featured ads:", error)
-        // Fallback to empty array if error
-        setFeaturedAds([])
-      }
-    }
-
-    fetchFeaturedAds()
+    // Get all ads from localStorage
+    const allAds = JSON.parse(localStorage.getItem("ads") || "[]")
+    // Select a few random ads to feature
+    const randomAds = allAds.sort(() => 0.5 - Math.random()).slice(0, Math.min(5, allAds.length))
+    setFeaturedAds(randomAds)
   }, [])
 
   const nextSlide = () => {
@@ -64,9 +55,7 @@ export function FeaturedAdsCarousel() {
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white z-20">
               <h3 className="text-xl font-bold mb-1">{ad.title}</h3>
               <p className="text-sm line-clamp-2">{ad.description}</p>
-              <p className="text-lg font-bold mt-2">
-                {ad.price ? `Rs. ${ad.price.toLocaleString()}` : "Price on request"}
-              </p>
+              <p className="text-lg font-bold mt-2">Rs. {ad.price.toLocaleString()}</p>
             </div>
           </Link>
         ))}
