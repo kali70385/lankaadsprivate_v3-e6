@@ -58,7 +58,7 @@ export async function getAds(filters?: {
   limit?: number
   offset?: number
 }) {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   let query = supabase
     .from("ads")
@@ -102,7 +102,7 @@ export async function getAds(filters?: {
 }
 
 export async function getAdById(id: string) {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from("ads")
@@ -130,7 +130,7 @@ export async function getAdById(id: string) {
 }
 
 export async function getCategories() {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase.from("categories").select("*").order("name")
 
@@ -143,7 +143,7 @@ export async function getCategories() {
 }
 
 export async function getLocations() {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase.from("locations").select("*").order("name")
 
@@ -156,7 +156,7 @@ export async function getLocations() {
 }
 
 export async function getFeaturedAds(limit = 6) {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from("ads")
@@ -180,7 +180,7 @@ export async function getFeaturedAds(limit = 6) {
 }
 
 export async function getUserAds(userId: string) {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from("ads")
@@ -210,7 +210,7 @@ export async function createAd(adData: {
   contact_phone?: string
   contact_email?: string
 }) {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const {
     data: { user },
