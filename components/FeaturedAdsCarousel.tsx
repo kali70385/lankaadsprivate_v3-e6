@@ -4,8 +4,8 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import Link from "next/link"
-import { getFeaturedAds } from "@/lib/supabase/database"
-import type { Ad } from "@/lib/supabase/database"
+import { getFeaturedAds } from "@/lib/supabase/database-client"
+import type { Ad } from "@/lib/supabase/database-client"
 
 export function FeaturedAdsCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0)

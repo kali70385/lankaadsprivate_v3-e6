@@ -13,8 +13,8 @@ import { LoginModal } from "@/components/login-modal"
 import Image from "next/image"
 import React from "react"
 import { locations } from "@/lib/locations"
-import { getAds } from "@/lib/supabase/database"
-import type { Ad } from "@/lib/supabase/database"
+import { getAds } from "@/lib/supabase/database-client"
+import type { Ad } from "@/lib/supabase/database-client"
 
 export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false)

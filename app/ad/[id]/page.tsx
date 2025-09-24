@@ -6,8 +6,8 @@ import Image from "next/image"
 import { PhoneIcon, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
-import { getAdById } from "@/lib/supabase/database"
-import type { Ad } from "@/lib/supabase/database"
+import { getAdById } from "@/lib/supabase/database-client"
+import type { Ad } from "@/lib/supabase/database-client"
 
 export default function AdPage({ params }: { params: { id: string } }) {
   const [ad, setAd] = useState<Ad | null>(null)

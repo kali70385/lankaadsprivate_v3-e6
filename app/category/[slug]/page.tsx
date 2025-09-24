@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import React from "react"
 import { locations } from "@/lib/locations"
-import { getAds } from "@/lib/supabase/database"
-import type { Ad } from "@/lib/supabase/database"
+import { getAds } from "@/lib/supabase/database-client"
+import type { Ad } from "@/lib/supabase/database-client"
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const category = categories.find((cat) => cat.slug === params.slug)
