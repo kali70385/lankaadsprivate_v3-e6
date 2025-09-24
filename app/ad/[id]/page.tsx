@@ -3,23 +3,28 @@
 import { useState, useEffect } from "react"
 import { notFound } from "next/navigation"
 import Image from "next/image"
-import { PhoneIcon, MessageCircle, Clock } from "lucide-react"
+import { PhoneIcon, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
+import { getAdById } from "@/lib/supabase/database"
+import type { Ad } from "@/lib/supabase/database"
 
 export default function AdPage({ params }: { params: { id: string } }) {
-  const [ad, setAd] = useState<any>(null)
+  const [ad, setAd] = useState<Ad | null>(null)
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
   useEffect(() => {
-    const fetchAd = () => {
-      const ads = JSON.parse(localStorage.getItem("ads") || "[]")
-      const foundAd = ads.find((a: any) => a.id === params.id)
-      if (foundAd) {
+    const fetchAd = async () => {
+      try {
+        const foundAd = await getAdById(params.id)
         setAd(foundAd)
+      } catch (error) {
+        console.error("Error fetching ad:", error)
+        setAd(null)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     fetchAd()
@@ -33,7 +38,7 @@ export default function AdPage({ params }: { params: { id: string } }) {
     notFound()
   }
 
-  const createdDate = new Date(ad.createdAt)
+  const createdDate = new Date(ad.created_at)
   const now = new Date()
   const diffTime = Math.abs(now.getTime() - createdDate.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -62,7 +67,9 @@ export default function AdPage({ params }: { params: { id: string } }) {
         </div>
         <div className="relative z-10 p-8">
           <h1 className="text-3xl font-bold mb-4 text-primary">{ad.title}</h1>
-          <p className="text-2xl font-bold text-primary/90 mb-4">Rs. {ad.price.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-primary/90 mb-4">
+            {ad.price ? `Rs. ${ad.price.toLocaleString()}` : "Price on request"}
+          </p>
         </div>
       </div>
 
@@ -88,19 +95,14 @@ export default function AdPage({ params }: { params: { id: string } }) {
         </div>
         <div>
           <p className="mb-4">{ad.description}</p>
-          <p className="font-semibold mb-2">Category: {ad.category}</p>
-          {ad.district && (
-            <p className="font-semibold mb-2">Location: {ad.city ? `${ad.city}, ${ad.district}` : ad.district}</p>
-          )}
+          <p className="font-semibold mb-2">Category: {ad.category?.name}</p>
+          {ad.location && <p className="font-semibold mb-2">Location: {ad.location.name}</p>}
           <div className="flex items-center space-x-2 mb-4">
             <PhoneIcon className="w-5 h-5 text-primary/90" />
-            <span className="text-primary/90">{ad.contactNumber}</span>
-            {ad.isWhatsApp && <MessageCircle className="w-5 h-5 text-green-500" title="WhatsApp available" />}
-            {ad.isViber && (
-              <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor" title="Viber available">
-                <path d="M11.4.8C5.1.8 0 5.9 0 12.2c0 2.8 1 5.4 2.7 7.4l-.7 3.1 3.2-.7c1.9 1.5 4.3 2.4 6.9 2.4 6.3 0 11.4-5.1 11.4-11.4S17.7.8 11.4.8zm6.8 14.7c-.3.8-1.5 1.5-2.4 1.7-.6.1-1.4.2-4.1-.9-3.4-1.4-5.6-4.8-5.8-5-.2-.2-1.6-2.1-1.6-4.1 0-2 1-2.9 1.4-3.3.3-.3.7-.4 1-.4h.7c.3 0 .6 0 .8.7.3.7 1 2.5 1.1 2.7.1.2.2.4 0 .7-.1.3-.2.4-.4.6-.2.2-.4.4-.5.5-.2.2-.4.4-.2.7.2.4.9 1.6 2 2.6 1.4 1.3 2.6 1.7 3 1.9.3.1.6.1.8-.1.2-.3.9-1.1 1.2-1.5.2-.3.5-.3.8-.2.3.1 2.1 1 2.4 1.2.3.2.6.3.7.5.1.1.1.7-.2 1.5z" />
-              </svg>
-            )}
+            <span className="text-primary/90">
+              {ad.contact_phone || ad.profile?.telephone || "Contact via message"}
+            </span>
+            {/* Note: WhatsApp and Viber flags would need to be added to database schema if needed */}
           </div>
           <div className="flex items-center text-sm text-gray-500 mb-4">
             <Clock className="w-4 h-4 mr-1" />
@@ -109,8 +111,9 @@ export default function AdPage({ params }: { params: { id: string } }) {
           <Button
             className="w-full bg-primary hover:bg-primary/90"
             onClick={() => {
-              if (ad.contactNumber) {
-                window.location.href = `tel:${ad.contactNumber}`
+              const contactNumber = ad.contact_phone || ad.profile?.telephone
+              if (contactNumber) {
+                window.location.href = `tel:${contactNumber}`
               } else {
                 toast({
                   title: "Error",

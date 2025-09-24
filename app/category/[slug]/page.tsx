@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Search } from "lucide-react"
@@ -10,14 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import React from "react"
 import { locations } from "@/lib/locations"
-
-// This is a mock function. In a real app, you'd fetch ads from a database.
-const getAdsForCategory = (categorySlug: string) => {
-  const allAds = JSON.parse(localStorage.getItem("ads") || "[]")
-  return allAds
-    .filter((ad) => ad.category === categorySlug)
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-}
+import { getAds } from "@/lib/supabase/database"
+import type { Ad } from "@/lib/supabase/database"
 
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const category = categories.find((cat) => cat.slug === params.slug)
@@ -25,12 +19,33 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   const [currentPage, setCurrentPage] = useState(1)
   const adsPerPage = 16
   const [locationFilter, setLocationFilter] = useState("")
+  const [ads, setAds] = useState<Ad[]>([])
+  const [loading, setLoading] = useState(true)
 
   if (!category) {
     notFound()
   }
 
-  const ads = getAdsForCategory(category.slug)
+  useEffect(() => {
+    async function fetchCategoryAds() {
+      try {
+        setLoading(true)
+        const categoryAds = await getAds({ category: category.slug })
+        setAds(categoryAds)
+      } catch (error) {
+        console.error("Error fetching category ads:", error)
+        setAds([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCategoryAds()
+  }, [category.slug])
+
+  if (loading) {
+    return <div className="text-center mt-8">Loading...</div>
+  }
 
   const filteredBySearch = ads.filter(
     (ad) =>
@@ -39,7 +54,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   )
 
   const filteredAds = locationFilter
-    ? filteredBySearch.filter((ad) => ad.district === locationFilter)
+    ? filteredBySearch.filter((ad) => ad.location?.name === locationFilter)
     : filteredBySearch
 
   const indexOfLastAd = currentPage * adsPerPage

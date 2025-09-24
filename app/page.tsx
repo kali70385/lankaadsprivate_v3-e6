@@ -13,10 +13,12 @@ import { LoginModal } from "@/components/login-modal"
 import Image from "next/image"
 import React from "react"
 import { locations } from "@/lib/locations"
+import { getAds } from "@/lib/supabase/database"
+import type { Ad } from "@/lib/supabase/database"
 
 export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false)
-  const [latestAds, setLatestAds] = useState([])
+  const [latestAds, setLatestAds] = useState<Ad[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -26,11 +28,10 @@ export default function Home() {
   const [locationFilter, setLocationFilter] = useState("")
 
   useEffect(() => {
-    function fetchAds() {
+    async function fetchAds() {
       try {
-        const ads = JSON.parse(localStorage.getItem("ads") || "[]")
-        const sortedAds = ads.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        setLatestAds(sortedAds)
+        const ads = await getAds({ limit: 100 })
+        setLatestAds(ads)
         setIsLoading(false)
       } catch (err) {
         console.error("Error fetching latest ads:", err)
@@ -50,7 +51,7 @@ export default function Home() {
     return <div className="text-center text-red-600 mt-8">{error}</div>
   }
 
-  const filteredByLocation = locationFilter ? latestAds.filter((ad) => ad.district === locationFilter) : latestAds
+  const filteredByLocation = locationFilter ? latestAds.filter((ad) => ad.location?.name === locationFilter) : latestAds
 
   const indexOfLastAd = currentPage * adsPerPage
   const indexOfFirstAd = indexOfLastAd - adsPerPage
